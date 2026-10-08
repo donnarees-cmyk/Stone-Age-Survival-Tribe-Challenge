@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stone Age Survival: Tribe Challenge</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{--bg:#EFE4CC;--ink:#2B211B;--card:#FBF5E6;--ochre:#C98A2B;--red:#A8442B;--moss:#5F7430;--line:#2B211B;--mute:#6b5a4b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#241B16;--ink:#F1E6CF;--card:#33271F;--line:#F1E6CF;--mute:#bba98f;--ochre:#E0A445;--red:#D9654A;--moss:#8FA85A}}
+:root[data-theme="dark"]{--bg:#241B16;--ink:#F1E6CF;--card:#33271F;--line:#F1E6CF;--mute:#bba98f;--ochre:#E0A445;--red:#D9654A;--moss:#8FA85A}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-size:18px;line-height:1.5}
+h1,h2,h3{font-family:"Alfa Slab One",Georgia,serif;font-weight:400;line-height:1.15;margin:0 0 .5rem}
+main{max-width:760px;margin:0 auto;padding:18px 16px 40px}
+.hud{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;background:var(--card);border:3px solid var(--line);border-radius:14px 22px 14px 18px;padding:8px 14px;margin-bottom:14px;font-weight:700}
+.panel{background:var(--card);border:3px solid var(--line);border-radius:20px 12px 22px 14px;padding:20px;margin-bottom:14px}
+button{font:inherit;font-weight:700;cursor:pointer;color:var(--ink);background:var(--ochre);border:3px solid var(--line);border-radius:12px;padding:10px 16px}
+button:hover{filter:brightness(1.08)}button:focus-visible,input:focus-visible{outline:4px solid var(--red);outline-offset:2px}
+input{font:inherit;padding:10px;border:3px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:100%;max-width:320px}
+.map{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.st{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px;background:var(--card)}
+.st .big{font-size:2.2rem;line-height:1}
+.st[disabled]{opacity:.55;cursor:default}
+.pips{letter-spacing:4px}
+.arena{position:relative;height:300px;border:3px solid var(--line);border-radius:16px;overflow:hidden;touch-action:manipulation}
+.arena.hunt{background:linear-gradient(#cfe0c0 0 70%,#9fb06a 70%)}
+.arena.gather{background:linear-gradient(#d9e8c4 0 55%,#7f9a45 55%)}
+.arena.fish{background:linear-gradient(#e8dcc0 0 18%,#4e8aa8 18%)}
+.arena.fire{background:radial-gradient(circle at 50% 100%,#7a3a1c,#2b1a12 70%)}
+.tgt{position:absolute;font-size:2.8rem;line-height:1;background:none;border:0;padding:6px;cursor:pointer;transition:left .5s,top .5s}
+.opt{display:block;width:100%;text-align:left;background:var(--bg);margin:8px 0}
+.opt.right{background:var(--moss);color:#fff}.opt.wrong{background:var(--red);color:#fff}
+.passage{border-left:6px solid var(--ochre);padding:4px 0 4px 14px;margin:0 0 14px;font-style:italic}
+.fb{margin-top:10px;font-weight:700}
+.meter{height:16px;border:3px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden}
+.meter>i{display:block;height:100%;background:var(--moss);width:0;transition:width .4s}
+.small{color:var(--mute);font-size:.9rem}
+.pre{white-space:pre-wrap}
+@media (max-width:480px){.map{grid-template-columns:1fr}body{font-size:17px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<h1>Stone Age Survival: Tribe Challenge</h1>
+<div id="app"></div>
+</main>
+<script>
+const ST={
+hunt:{n:"The Hunt",e:"🏹",cls:"hunt",tg:["🦣","🦌","🐗"],tell:"Tap 3 animals to track your prey!",q:[
+{p:"Early humans were nomads. They followed herds of animals from place to place instead of building permanent homes.",q:"What does the word nomad mean in this passage?",o:["A person who moves from place to place","A person who builds stone walls","A person who paints caves","A person who farms crops"],a:0,x:"The clue is 'followed herds... instead of building permanent homes.'"},
+{p:"During the Paleolithic Era, or Old Stone Age, people lived as hunter-gatherers. They hunted animals and gathered wild plants because they had not yet learned to farm.",q:"Which detail best explains why Paleolithic people were hunter-gatherers?",o:["They lived in big cities","They had not yet learned to farm","They traded with ships","They wrote books"],a:1,x:"The text says they hunted and gathered 'because they had not yet learned to farm.'"},
+{p:"Hunters worked in groups. Together they could trap a mammoth that no single person could bring down. The meat fed the whole group, and the bones and hides became tools and shelter.",q:"What is the central idea of this passage?",o:["Mammoths were gentle animals","Working together helped early humans survive","Bones are hard to carve","Hunters lived alone"],a:1,x:"Every detail shows how teamwork helped the group meet its needs."}]},
+gather:{n:"The Gather",e:"🫐",cls:"gather",tg:["🫐","🌰","🍄","🥜"],tell:"Tap 3 foods to fill your basket!",q:[
+{p:"Gatherers knew which plants were safe to eat. They passed this knowledge down by telling stories and showing children, since there was no writing yet.",q:"How did early humans share what they knew?",o:["By writing textbooks","By telling stories and showing children","By sending letters","By posting signs"],a:1,x:"The passage says there was no writing, so knowledge passed by stories and showing."},
+{p:"When berries and nuts grew thick in autumn, the tribe gathered extra and dried it. Winter was coming, and the hunting would be poor.",q:"Why did the tribe dry extra food?",o:["They wanted to sell it","They liked the taste","They were preparing for the lean winter","They were bored"],a:2,x:"Cause and effect: winter would bring poor hunting, so they saved food."},
+{p:"Scientists believe gatherers supplied much of a tribe's daily food. Plants did not run away, so gathering was a steadier way to eat than hunting.",q:"What does steadier most likely mean?",o:["More dangerous","More reliable","More expensive","More exciting"],a:1,x:"Plants stayed put, so gathering gave food more reliably."}]},
+fish:{n:"The Fishing Hole",e:"🎣",cls:"fish",tg:["🐟","🐠","🦐"],tell:"Tap 3 fish before they swim away!",q:[
+{p:"Archaeologists dig up artifacts, such as bone fishhooks and stone spear points. These objects are clues that show how people long ago lived.",q:"What is an artifact?",o:["A made object from the past that gives clues","A wild animal","A kind of cave","A written story"],a:0,x:"The passage names fishhooks and spear points as objects that act as clues."},
+{p:"A pile of fish bones was found beside an ancient campfire near a river. Next to it lay a sharp bone hook.",q:"What can you infer from this evidence?",o:["The people ate fish and made tools to catch them","The river was always dry","The people never used fire","The hook was a toy"],a:0,x:"Fish bones plus a hook near a fire suggest fishing and cooking."},
+{p:"Tribes often camped near rivers and lakes. Water gave them drinking water, fish to eat, and animals that came to drink.",q:"Why did early tribes camp near water?",o:["Water offered many things they needed","They disliked land","They wanted to swim for fun","Rivers were quiet"],a:0,x:"The text lists three needs that water met."}]},
+fire:{n:"The Fire Cave",e:"🔥",cls:"fire",tg:["🪵","🔥","🪨"],tell:"Tap 3 pieces to build your fire!",q:[
+{p:"Fire kept early humans warm, scared off wild animals, and made it possible to cook food. Cooked food was easier to chew and digest.",q:"Which is NOT a benefit of fire named in the passage?",o:["Warmth","Cooking food","Protection from animals","Making metal swords"],a:3,x:"Metal swords are never mentioned. The other three are."},
+{p:"Inside caves in France and Spain, early artists painted horses, bison, and hand prints. They used red and yellow ochre and black charcoal.",q:"What do cave paintings help us learn?",o:["How early people saw their world","What the weather will be","How to build roads","Who ruled a kingdom"],a:0,x:"Paintings of animals and hands are evidence of what mattered to these people."},
+{p:"Around 10,000 years ago, some people began planting seeds and raising animals. They stopped moving so often and built villages. This began the Neolithic Era, or New Stone Age.",q:"What was an effect of learning to farm?",o:["People built villages and stayed in one place","People stopped using tools","People moved more often","People forgot fire"],a:0,x:"Farming gave a steady food supply, so people settled down."}]}
+};
+const KEYS=Object.keys(ST);
+let g;
+const $=s=>document.querySelector(s),app=$("#app");
+function init(){g={name:"",score:0,food:0,done:{hunt:0,gather:0,fish:0,fire:0},right:0,cur:null,hits:0}}
+function hud(){return `<div class="hud"><span>🧑 ${esc(g.name||"Tribe")}</span><span>⭐ ${g.score} pts</span><span>🍖 Food ${g.food}</span></div>`}
+function esc(s){return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function start(){init();app.innerHTML=`<div class="panel"><h2>Your tribe is hungry!</h2>
+<p>You are a Paleolithic hunter-gatherer. Visit four stations, tap to find your supplies, then read the clue and answer the question. Every right answer brings food back to the tribe. Can you keep everyone alive until the Neolithic Era?</p>
+<p><label for="nm"><b>Your tribe name or your name:</b></label><br><input id="nm" maxlength="24" autocomplete="off"></p>
+<button id="go">Start the journey</button>
+<p class="small">Skills practiced: vocabulary in context, central idea, inference, cause and effect, using text evidence. Topic: early humans, Paleolithic and Neolithic eras.</p></div>`;
+$("#go").onclick=()=>{g.name=$("#nm").value.trim()||"Mystery Tribe";map()}}
+function total(){return KEYS.reduce((a,k)=>a+g.done[k],0)}
+function map(){
+if(total()===12)return end();
+app.innerHTML=hud()+`<div class="panel"><h2>Choose a station</h2><div class="meter"><i style="width:${total()/12*100}%"></i></div><p class="small">${total()} of 12 challenges complete</p>
+<div class="map">${KEYS.map(k=>{const s=ST[k],d=g.done[k];return `<button class="st" data-k="${k}" ${d>=3?"disabled":""}><span class="big">${s.e}</span><span>${s.n}</span><span class="pips">${"●".repeat(d)}${"○".repeat(3-d)}</span></button>`}).join("")}</div></div>`;
+document.querySelectorAll(".st").forEach(b=>b.onclick=()=>arena(b.dataset.k))}
+function arena(k){
+const s=ST[k];g.cur=k;g.hits=0;
+app.innerHTML=hud()+`<div class="panel"><h2>${s.n}</h2><p>${s.tell}</p><div class="arena ${s.cls}" id="ar"></div></div>`;
+spawn(k)}
+function spawn(k){
+const ar=$("#ar");ar.innerHTML="";const s=ST[k],e=s.tg[Math.floor(Math.random()*s.tg.length)];
+const b=document.createElement("button");b.className="tgt";b.textContent=e;b.setAttribute("aria-label","Tap the "+e);
+b.style.left=Math.random()*80+"%";b.style.top=Math.random()*75+"%";
+b.onclick=()=>{g.hits++;if(g.hits>=3)question();else spawn(k)};
+ar.appendChild(b);
+setTimeout(()=>{if(b.isConnected){b.style.left=Math.random()*80+"%";b.style.top=Math.random()*75+"%"}},1100)}
+function question(){
+const k=g.cur,s=ST[k],q=s.q[g.done[k]];
+app.innerHTML=hud()+`<div class="panel"><h3>${s.e} ${s.n}: read the clue</h3><p class="passage">${q.p}</p><p><b>${q.q}</b></p><div id="opts">${q.o.map((t,i)=>`<button class="opt" data-i="${i}">${String.fromCharCode(65+i)}. ${t}</button>`).join("")}</div><div class="fb" id="fb" aria-live="polite"></div></div>`;
+document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.i,q))}
+function answer(i,q){
+const bs=document.querySelectorAll(".opt");bs.forEach(b=>b.disabled=true);
+bs[q.a].classList.add("right");const ok=i===q.a;
+if(ok){g.score+=10;g.food+=2;g.right++}else{bs[i].classList.add("wrong");g.food+=1;g.score+=2}
+g.done[g.cur]++;
+$("#fb").innerHTML=(ok?"✅ Great work! +10 points and +2 food. ":"❌ Not this time. You still bring back +1 food. ")+esc(q.x)+`<br><br><button id="nx">Back to the map</button>`;
+$("#nx").onclick=map}
+function end(){
+const r=g.right,t=r>=11?["Tribe Chief","Your tribe will thrive for thousands of years!"]:r>=8?["Master Hunter-Gatherer","Your tribe is strong and well fed."]:r>=5?["Skilled Scout","Your tribe survives, but review the clues you missed."]:["Apprentice","Your tribe is hungry. Try again and read each clue closely!"];
+app.innerHTML=hud()+`<div class="panel"><h2>${t[0]} ${r>=8?"👑":"🔥"}</h2><p>${t[1]}</p><p><b>${esc(g.name)}</b>: ${r} of 12 correct, ${g.score} points, ${g.food} food stored.</p>
+<h3>Show what you know</h3><p>Write 4 to 5 sentences: <b>Which station was hardest for early humans, and why? Use at least two vocabulary words (nomad, artifact, hunter-gatherer, Paleolithic, Neolithic) and one piece of text evidence.</b></p>
+<p class="small">Teachers: have students screenshot this screen to turn in with their written response.</p><button id="again">Play again</button></div>`;
+$("#again").onclick=start}
+start();
+</script>
+</body>
+</html>
